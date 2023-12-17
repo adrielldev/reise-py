@@ -1,10 +1,12 @@
 import socket 
 import ssl
+import os
 
 class URL:
+
     def __init__(self,url):
         self.scheme,url = url.split("://",1)
-        assert self.scheme in ["http","https"]
+        assert self.scheme in ["http","https","file"]
         if "/" not in url:
             url = url + "/"
         self.host,url = url.split("/",1)
@@ -16,6 +18,7 @@ class URL:
             self.port = 80
         elif self.scheme == "https":
             self.port = 443
+
     def request(self):
         s = socket.socket(
             family=socket.AF_INET,
@@ -38,15 +41,23 @@ class URL:
             if line == "\r\n": break
             header,value = line.split(":",1)
             response_headers[header.casefold()] = value.strip()
+        # conn header e user-agent header
+        response_headers['Connection'] = 'close'
+        response_headers['User-Agent'] = 'Reise v0'
+
+        print(response_headers)
         assert "transfer-encoding" not in response_headers
         assert "content-encoding" not in response_headers
         body = response.read()
         s.close()
         return body
     
+    def request_file(self):
+        pass
 
 
 def show(body):
+
     in_tag = False
     for c in body:
         if c == "<":
@@ -57,6 +68,7 @@ def show(body):
             print(c,end="")
 
 def load(url):
+
     body = url.request()
     show(body)
 
