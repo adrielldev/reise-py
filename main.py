@@ -18,8 +18,17 @@ class URL:
             self.port = 80
         elif self.scheme == "https":
             self.port = 443
+        elif self.scheme == "file":
+            filepath = self.path.split("/")
+            self.filename  = filepath[-1]
+            filepath.pop()
+            self.dir = '/'.join(filepath).replace('/','',1)
+            os.chdir(self.dir)
 
     def request(self):
+
+        if self.scheme == "file":
+            return self.request_file()
         s = socket.socket(
             family=socket.AF_INET,
             type=socket.SOCK_STREAM,
@@ -53,7 +62,10 @@ class URL:
         return body
     
     def request_file(self):
-        pass
+        retval = os.getcwd()
+        print(retval)
+        file = open((self.dir + '/' + self.filename,'r'))
+        return file.readlines()
 
 
 def show(body):
@@ -68,7 +80,6 @@ def show(body):
             print(c,end="")
 
 def load(url):
-
     body = url.request()
     show(body)
 
